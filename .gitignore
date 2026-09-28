@@ -1,0 +1,19 @@
+# dependencias
+node_modules/
+
+# entorno y credenciales (la llave de la cuenta de servicio de Google nunca va al repo)
+.env
+.env.local
+*.local
+*.json.key
+gcal-*.json
+service-account*.json
+
+# build del cliente
+client/dist/
+
+# logs y temporales
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

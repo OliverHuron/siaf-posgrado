@@ -1,0 +1,166 @@
+{
+  "anioBase": 2026,
+  "nota": "Transcrito de la captura del Excel de horarios (periodo ago 2026 - ene 2027). Los textos que venían cortados en la captura terminan en '…'; se corrigen reimportando el Excel original desde la app.",
+  "grupos": [
+    {
+      "posgrado": "Maestría en Fiscal Op. Titulación", "tipo": "semestral",
+      "inicio": "24 de agosto", "fin": "22 de octubre", "salon": "3", "piso": "PB",
+      "filas": [
+        ["Derecho Corporativo", "Dra. Lizbeth Chávez Román", "lunes", "7:00 - 9:00"],
+        ["Teoría de las Contribuciones", "Dra. Tzitzi Erandi Becerra Moreno", "lunes", "9:00 - 11:00"],
+        ["Aport. Seg. Social y Der. Laboral", "M.F. Humberto Ramírez Cárdenas", "lunes", "11:00 - 13:00"],
+        ["Impuesto Sobre la Renta I", "M.P.F.T.I. Nicte Ha Damián Pérez", "martes", "7:00 - 9:00"],
+        ["Teoría de las Contribuciones", "Dra. Tzitzi Erandi Becerra Moreno", "martes", "9:00 - 11:00"],
+        ["Derecho Corporativo", "Dra. Lizbeth Chávez Román", "martes", "11:00 - 13:00"],
+        ["Impuesto Sobre la Renta I", "M.P.F.T.I. Nicte Ha Damián Pérez", "miércoles", "7:00 - 9:00"],
+        ["Derecho Corporativo", "Dra. Lizbeth Chávez Román", "miércoles", "9:00 - 11:00"],
+        ["Aport. Seg. Social y Der. Laboral", "M.F. Humberto Ramírez Cárdenas", "miércoles", "11:00 - 13:00"],
+        ["Impuesto Sobre la Renta I", "M.P.F.T.I. Nicte Ha Damián Pérez", "jueves", "7:00 - 9:00"],
+        ["Teoría de las Contribuciones", "Dra. Tzitzi Erandi Becerra Moreno", "jueves", "9:00 - 11:00"],
+        ["Aport. Seg. Social y Der. Laboral", "M.F. Humberto Ramírez Cárdenas", "jueves", "11:00 - 13:00"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Fiscal Op. Titulación", "tipo": "semestral",
+      "inicio": "31 de agosto", "fin": "03 de diciembre", "salon": "2", "piso": "PB",
+      "filas": [
+        ["Teoría de las Contribuciones", "M.F. Stephany Ofelia Valdés González", "lunes", "8:00 - 10:00"],
+        ["Derecho Corporativo", "Dr. Ricardo Cizniega Arreola", "lunes", "10:00 - 12:00"],
+        ["Aport. Seg. Social y Der. Laboral", "M.F. Miguel Angel Solache Martínez", "martes", "8:00 - 10:00"],
+        ["Impuesto Sobre la Renta I", "M.F. Israel Álvarez Rivera", "martes", "10:00 - 12:00"],
+        ["Teoría de las Contribuciones", "M.F. Stephany Ofelia Valdés González", "miércoles", "8:00 - 10:00"],
+        ["Derecho Corporativo", "Dr. Ricardo Cizniega Arreola", "miércoles", "10:00 - 12:00"],
+        ["Aport. Seg. Social y Der. Laboral", "M.F. Miguel Angel Solache Martínez", "jueves", "8:00 - 10:00"],
+        ["Impuesto Sobre la Renta I", "M.F. Israel Álvarez Rivera", "jueves", "10:00 - 12:00"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Fiscal", "tipo": "semestral",
+      "inicio": "04 de septiembre", "fin": "16 de enero", "piso": "3er piso",
+      "filas": [
+        ["Aport. Seg. Social y Der. Laboral", "Dr. Javier Eliott Olmedo Castillo", "Viernes", "15:00 - 18:00", "15"],
+        ["Teoría de las Contribuciones", "Dr. Jorge Arturo Amante Urbina", "Viernes", "18:00 - 21:00", "15"],
+        ["Impuesto Sobre la Renta I", "M.F. Marcos Vela Godínez", "Sábado", "08:00 - 11:00", "15"],
+        ["Derecho Corporativo", "M.F. Francisco Miguel Rojas López", "Sábado", "11:00 - 14:00", "15"],
+        ["Teoría de las Contribuciones", "Dra. María Etelvina Rubio Rangel", "Viernes", "15:00 - 18:00", "11"],
+        ["Impuesto Sobre la Renta I", "Dr. Gustavo Oblea Rosales", "Viernes", "18:00 - 21:00", "11"],
+        ["Derecho Corporativo", "Dr. Victor Manuel Guerrero Daw", "Sábado", "08:00 - 11:00", "11"],
+        ["Aport. Seg. Social y Der. Laboral", "Dra. Flor de Maria Tavera Ramirez", "Sábado", "11:00 - 14:00", "11"],
+        ["Imp. al Capital y a los Consumos", "M.P.F.T.I. Daniel Enrique Gutierrez…", "Viernes", "15:00 - 18:00", "17"],
+        ["Teoría de las Contribuciones II", "M.J.A. Piedad Camacho Lozano", "Viernes", "18:00 - 21:00", "17"],
+        ["Impuesto Sobre la Renta II", "Dra. Adriana del Sol Moreno Rodríguez", "Sábado", "08:00 - 11:00", "17"],
+        ["Administración tributaria", "M.D. Erandi Rubí Murillo Gómez", "Sábado", "11:00 - 14:00", "17"],
+        ["Impuesto sobre la renta II", "Dr. Roberto Young Peraldi", "Viernes", "15:00 - 18:00", "9"],
+        ["Administración tributaria", "M.F. Ignacio Zahaid Zamudio Méndez", "Viernes", "18:00 - 21:00", "9"],
+        ["Imp. al Capital y a los Consumos", "M.F. Miguel López Miranda", "Sábado", "08:00 - 11:00", "9"],
+        ["Teoría de las contribuciones II", "M.P.F.T.I. Dasha Hillary Sámano S…", "Sábado", "11:00 - 14:00", "9"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Fiscal (Def. Fiscal)", "tipo": "semestral",
+      "inicio": "04 de septiembre", "fin": "16 de enero", "salon": "16", "piso": "3er piso",
+      "filas": [
+        ["Juicio de Amparo en Materia Fiscal", "M.F. Francisco Javier López Avila", "Viernes", "15:00 - 18:00"],
+        ["Procesal Fiscal I", "M.F. Helgar Barajas Garcia", "Viernes", "18:00 - 21:00"],
+        ["Derecho Penal Fiscal", "Dr. Jesús Santos Velázquez Guerrero", "Sábado", "08:00 - 11:00"],
+        ["Procedimientos Administrativos…", "M.F. Abimael Perez Mojica", "Sábado", "11:00 - 14:00"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Fiscal (Comercio Ext.)", "tipo": "semestral",
+      "inicio": "04 de septiembre", "fin": "16 de enero", "salon": "10", "piso": "3er piso",
+      "filas": [
+        ["Políticas de Desarrollo Económico", "Dr. Carlos Francisco Ortiz Paniagua", "Viernes", "15:00 - 18:00"],
+        ["Sistemas Generalizados de Preferencias", "Dr. Irvin Gilberto Paz Castro", "Viernes", "18:00 - 21:00"],
+        ["Contribuciones al Comercio Exterior", "M.F. César Guerrero Rubio", "Sábado", "08:00 - 11:00"],
+        ["Laboratorio de Contribuciones…", "Dr. René Augusto Marín Leyva", "Sábado", "11:00 - 14:00"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Fiscal (Planeación Fiscal)", "tipo": "semestral",
+      "inicio": "04 de septiembre", "fin": "16 de enero", "salon": "18", "piso": "3er piso",
+      "filas": [
+        ["Planeación Fiscal I", "M.F. Ramiro Humberto Ortega Cam…", "Viernes", "15:00 - 18:00"],
+        ["Laboratorio Fiscal II", "Dr. Alberto Gabriel Guzman Díaz", "Viernes", "18:00 - 21:00"],
+        ["Contabilidad de los Impuestos", "Dr. Raúl Angel García Alejandre", "Sábado", "08:00 - 11:00"],
+        ["Laboratorio Fiscal I", "M.F. Gabriel Antonio Medina Perez", "Sábado", "11:00 - 14:00"]
+      ]
+    },
+    {
+      "posgrado": "TIENE GOTERA Y NO SE USA", "salon": "14", "piso": "3er piso",
+      "filas": [["", "", "", ""]]
+    },
+    {
+      "posgrado": "Doctorado en Fiscal", "tipo": "semestral",
+      "inicio": "04 de septiembre", "fin": "16 de enero", "salon": "3", "piso": "PB",
+      "filas": [
+        ["", "", "Martes", "17:00 - 22:00"],
+        ["", "", "Jueves", "17:00 - 22:00"]
+      ]
+    },
+    {
+      "posgrado": "Doctorado en Administración", "tipo": "semestral",
+      "inicio": "07 de septiembre", "fin": "15 de enero", "piso": "PB",
+      "filas": [
+        ["Métodos de Investigación III", "Dr. Cuauhtemoc Guerrero Dávalos", "Viernes", "09:00 - 13:00", "3"],
+        ["Métodos de Investigación I", "Dr. Jaime Apolinar Martínez", "Lunes", "08:00 - 12:00", "4"],
+        ["Desarrollo Sustentable", "Dra. Norma laura Godínez Reyes", "Viernes", "08:00 - 12:00", "4"],
+        ["Introducción a los modelos est…", "Dr. Oscar V. De la Torre Torres", "Viernes", "12:00 - 14:00", "4"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Administración Opc. Titulación", "tipo": "trimestral", "piso": "1er piso",
+      "filas": [
+        ["Ingles", "Dra. Flor Madrigal Moreno", "Lunes", "08:00 - 11:00", "Cómputo A", "07 de septiembre", "26 de octubre"],
+        ["Computacion", "Dr. Heber Bernardo Magallon González", "Martes", "08:00 - 11:00", "Computo C", "08 de septiembre", "27 de octubre"],
+        ["Matematicas", "Dr. Arcadio Gonzalez Samaniego", "Miércoles", "08:00 - 11:00", "Computo C", "09 de septiembre", "28 de octubre"],
+        ["Contabilidad", "M.A. Pedro Campos Delgado", "Jueves", "08:00 - 11:00", "Cómputo A", "10 de septiembre", "29 de octubre"],
+        ["Computacion", "Dr. Ma. Hilda Rodales Trujillo", "Sabado", "07:00 - 11:00", "Computo C", "12 de septiembre", "17 de octubre"],
+        ["Ingles", "Mtra. Paola G. Campos Chavez", "Sabado", "11:00 - 15:00", "Computo C", "12 de septiembre", "17 de octubre"]
+      ]
+    },
+    {
+      "posgrado": "Maestría en Administración", "tipo": "trimestral", "piso": "PB",
+      "filas": [
+        ["Contabilidad Administrativa", "Dr. Mauricio Aurelio Chagolla Farias", "Viernes", "18:00 - 22:00", "3", "12 de junio", "11 de septiembre"],
+        ["Comportamiento Organizacional", "M.A. Maria del Pilar Hernandez Arvi…", "Viernes", "14:00 - 18:00", "3", "12 de junio", "11 de septiembre"],
+        ["Seminario de Estrategia Administrativa", "Dr. Marco Alberto Valenzo Jimenez", "Viernes", "18:00 - 22:00", "5", "12 de junio", "11 de septiembre"],
+        ["Microeconomia", "Dra. Maria Francisca Peñaloza Tala…", "Sabado", "07:00 - 11:00", "3", "12 de junio", "11 de septiembre"],
+        ["Administracion de Operaciones", "Dr. Arcadio Gonzalez Samaniego", "Sabado", "11:00 - 15:00", "3", "13 de junio", "12 de septiembre"],
+        ["Seminario de Dir. Empresarial", "Dr. Sigifredo Gastelum Valdez", "Sabado", "11:00 - 15:00", "2", "13 de junio", "12 de septiembre"],
+        ["Mercadotecnia", "Dr. Luis Gerardo Mendoza Mendoza", "Sabado", "07:00 - 11:00", "2", "13 de junio", "12 de septiembre"]
+      ]
+    },
+    {
+      "posgrado": "Licenciatura en Actuaría", "tipo": "semestral", "salon": "Computo C", "piso": "1er piso",
+      "filas": [
+        ["", "Dr. Pedro Chavez Lugo", "Lunes", "09:00 - 11:00"],
+        ["", "Dr. Gustavo Alfonso Gutierrez Carre…", "Lunes", "11:00 - 13:00"],
+        ["", "Dr. Pedro Chavez Lugo", "Viernes", "09:00 - 11:00"],
+        ["", "Dr. Gustavo Alfonso Gutierrez Carre…", "Viernes", "11:00 - 13:00"],
+        ["", "Dr. Oscar V. De la Torre Torres", "Martes", "12:00 - 14:00"],
+        ["", "Dr. Oscar V. De la Torre Torres", "Jueves", "12:00 - 14:00"]
+      ]
+    },
+    {
+      "posgrado": "Lic en Administración", "tipo": "semestral",
+      "inicio": "14 de septiembre", "fin": "5 de enero", "salon": "5", "piso": "PB",
+      "filas": [
+        ["", "Claudia Sosa", "lunes", "09:00 - 17:00"],
+        ["", "Claudia Sosa", "Martes", "09:00 - 17:00"],
+        ["", "Claudia Sosa", "Miércoles", "09:00 - 17:00"],
+        ["", "Claudia Sosa", "Jueves", "09:00 - 17:00"]
+      ]
+    },
+    {
+      "posgrado": "Doctorado en Fiscal", "tipo": "semestral",
+      "inicio": "04 de septiembre", "fin": "16 de enero", "salon": "4", "piso": "PB",
+      "filas": [
+        ["Seminario de Investigación V", "", "Viernes", "15:00 - 18:00"],
+        ["Política Fiscal Ambiental y de P…", "", "Viernes", "18:00 - 21:00"],
+        ["Tópicos Fiscales Contemporáneos", "", "Sábado", "08:00 - 11:00"],
+        ["Redes de Investigación Tributaria", "", "Sábado", "11:00 - 14:00"]
+      ]
+    }
+  ]
+}
