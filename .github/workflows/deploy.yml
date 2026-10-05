@@ -61,5 +61,7 @@ jobs:
 
       - name: Verificar salud
         run: |
+          # El puerto sale del .env de producción (5005 lo ocupa otro proyecto en el servidor).
+          PORT=$(grep -E '^PORT=' "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]')
           sleep 3
-          curl -fsS http://localhost:5005/api/health | tee /dev/stderr | grep -q '"status":"OK"'
+          curl -fsS "http://localhost:${PORT}/api/health" | tee /dev/stderr | grep -q '"status":"OK"'
