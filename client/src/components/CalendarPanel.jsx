@@ -4,7 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
-import { colorPrograma, fechaISO, hm, sumarDias, tituloClase } from '../lib/tiempo.js';
+import { claseEnMomento, colorPrograma, eventoEnMomento, fechaISO, hm, sumarDias, tituloClase } from '../lib/tiempo.js';
 
 const VISTAS = [
   ['timeGridDay', 'Día'],
@@ -90,8 +90,8 @@ function FiltroProgramas({ programas, ocultos, setOcultos }) {
 }
 
 // Calendario semanal: clases del sistema (recurrentes) + eventos externos de Google Calendar.
-export default function CalendarPanel({ clases, salonesPorId, eventosGcal, cargarGcal, momento, setMomento,
-  salonSel, onClaseClick, onEventoClick, programas, ocultos, setOcultos }) {
+export default function CalendarPanel({ clases, salonesPorId, eventosGcal, cargarGcal, momento, setMomento, consultando = false,
+  salonSel, onClaseClick, onEventoClick, programas, ocultos, setOcultos, visible = true }) {
   const ref = useRef(null);
   const [vista, setVista] = useState(null);
   const api = () => ref.current?.getApi();
@@ -102,9 +102,13 @@ export default function CalendarPanel({ clases, salonesPorId, eventosGcal, carga
     if (cal && (momento < cal.view.activeStart || momento >= cal.view.activeEnd)) cal.gotoDate(momento);
   }, [momento]);
 
+  // Al volver a mostrarse (estaba oculto con display:none) recalcula su tamaño.
+  useEffect(() => { if (visible) api()?.updateSize(); }, [visible]);
+
   const eventos = useMemo(() => {
+    // Al consultar un día/hora, solo quedan las clases y eventos en curso en ese instante.
     const deClases = clases
-      .filter((c) => !ocultos.has(c.programa))
+      .filter((c) => !ocultos.has(c.programa) && (!consultando || claseEnMomento(c, momento)))
       .map((c) => {
         const s = salonesPorId[c.salon_id];
         const color = colorPrograma(c.programa);
@@ -122,7 +126,7 @@ export default function CalendarPanel({ clases, salonesPorId, eventosGcal, carga
           extendedProps: { tipo: 'clase', clase: c, lugar: s ? s.nombre : 'Sin salón' },
         };
       });
-    const deGcal = eventosGcal.map((e) => ({
+    const deGcal = eventosGcal.filter((e) => !consultando || eventoEnMomento(e, momento)).map((e) => ({
       id: `g${e.id}`,
       title: e.titulo,
       start: e.inicio, end: e.fin, allDay: e.todoElDia,
@@ -135,7 +139,7 @@ export default function CalendarPanel({ clases, salonesPorId, eventosGcal, carga
       display: 'background', classNames: ['ev-momento'],
     };
     return [...deClases, ...deGcal, marca];
-  }, [clases, salonesPorId, eventosGcal, momento, salonSel, ocultos]);
+  }, [clases, salonesPorId, eventosGcal, momento, consultando, salonSel, ocultos]);
 
   const hoyISO = fechaISO(new Date());
   const selISO = fechaISO(momento);
@@ -149,7 +153,7 @@ export default function CalendarPanel({ clases, salonesPorId, eventosGcal, carga
           <button type="button" className="gc-redondo" onClick={() => api()?.next()} aria-label="Siguiente"><Chevron dir="der" /></button>
         </div>
         <h2 className="gc-titulo">{tituloVista(vista)}</h2>
-        <select className="gc-vista" value={vista?.type || 'timeGridDay'} onChange={(e) => api()?.changeView(e.target.value)} aria-label="Vista">
+        <select className="gc-vista" value={vista?.type || 'timeGridWeek'} onChange={(e) => api()?.changeView(e.target.value)} aria-label="Vista">
           {VISTAS.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
         </select>
       </div>
@@ -163,7 +167,7 @@ export default function CalendarPanel({ clases, salonesPorId, eventosGcal, carga
           ref={ref}
           plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
           locale={esLocale}
-          initialView="timeGridDay"
+          initialView="timeGridWeek"
           headerToolbar={false}
           height="100%"
           slotMinTime="07:00:00"
@@ -176,7 +180,7 @@ export default function CalendarPanel({ clases, salonesPorId, eventosGcal, carga
           expandRows
           slotEventOverlap={false}
           dayMaxEventRows={3}
-          views={{ timeGridDay: { eventMaxStack: 8 }, timeGridWeek: { eventMaxStack: 2 } }}
+          views={{ timeGridDay: { eventMaxStack: 8 }, timeGridWeek: { eventMaxStack: 3 } }}
           events={eventos}
           datesSet={(info) => {
             // El objeto view es mutable: se copia para que React note el cambio de rango.

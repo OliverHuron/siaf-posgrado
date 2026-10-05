@@ -4,6 +4,7 @@ import { useAuth } from '../auth.jsx';
 import { api } from '../api.js';
 import ClaseForm from '../components/ClaseForm.jsx';
 import PasswordModal from '../components/PasswordModal.jsx';
+import { asignarColores } from '../lib/tiempo.js';
 
 const I = {
   salones: <path d="M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18" />,
@@ -68,7 +69,11 @@ export default function StaffLayout() {
   }, [cargarSalones, cargarClases]);
 
   const salonesPorId = useMemo(() => Object.fromEntries(salones.map((s) => [s.id, s])), [salones]);
-  const programas = useMemo(() => [...new Set(clases.map((c) => c.programa))].sort((a, b) => a.localeCompare(b, 'es')), [clases]);
+  const programas = useMemo(() => {
+    const lista = [...new Set(clases.map((c) => c.programa))].sort((a, b) => a.localeCompare(b, 'es'));
+    asignarColores(lista); // antes de que las páginas hijas pinten con colorPrograma
+    return lista;
+  }, [clases]);
 
   const actualizarSalon = useCallback(async (id, cambios) => {
     try {

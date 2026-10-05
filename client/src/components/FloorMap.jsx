@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import Mesas from './Mesas.jsx';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import Mesas, { frenteDe } from './Mesas.jsx';
 import { PLANTAS } from '../lib/tiempo.js';
 import META from '../plans/meta.json';
 import baja from '../plans/baja.svg?raw';
@@ -12,7 +12,27 @@ const PLANOS = { baja: interior(baja), primera: interior(primera), segunda: inte
 
 const ETIQUETA = { ocupado: 'Ocupado', libre: 'Libre', fuera: 'Fuera de servicio', na: '' };
 
-export default function FloorMap({ planta, setPlanta, salones, estados, salonSel, onSelect, conteos }) {
+// Pastilla de estado: roja ocupado, verde libre, ámbar fuera de servicio.
+function Badge({ estado, cx, cy, fs }) {
+  const txt = ETIQUETA[estado];
+  const ref = useRef(null);
+  const [tw, setTw] = useState(txt.length * fs * 0.55);
+  // Ancho real del texto para que el relleno quede igual a ambos lados.
+  useLayoutEffect(() => { const b = ref.current?.getBBox(); if (b?.width) setTw(b.width); }, [txt, fs]);
+  const w = tw + fs * 1.4, h = fs * 1.6;
+  return (
+    <g className={`badge-estado ${estado}`}>
+      <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={h / 2} />
+      <text ref={ref} x={cx} y={cy} fontSize={fs} textAnchor="middle" dominantBaseline="central">{txt}</text>
+    </g>
+  );
+}
+
+// Área de interacción (planta baja): rótulo puesto a mano en el centro del pasillo, entre los cubículos
+// y la fachada. Su rectángulo en salones.json se encima con los cubículos, por eso no se usa para centrar.
+const FIJA = { codigo: '6104', x: 3077, y: 201, fs: 64 };
+
+export default function FloorMap({ planta, setPlanta, salones, estados, salonSel, onSelect, conteos, esAdmin }) {
   const svgRef = useRef(null);
   const vb = useRef(null);
   const movido = useRef(false);
@@ -128,26 +148,44 @@ export default function FloorMap({ planta, setPlanta, salones, estados, salonSel
         onClick={() => { if (!movido.current) onSelect(null); }}>
         <g dangerouslySetInnerHTML={{ __html: PLANOS[planta] }} />
         {enPlanta.map(s => {
-          const st = estados[s.id] || { estado: 'na' };
           const fs = Math.min(55, s.w / 8.5);
-          const banda = fs * 2.9 + 24;
+          if (s.codigo === FIJA.codigo) {
+            // Área fija: no es seleccionable ni editable; rótulo vertical en el centro del pasillo.
+            return (
+              <g key={s.id} className="sala no-asig fija">
+                <text className="sala-nombre" fontSize={FIJA.fs} transform={`translate(${FIJA.x} ${FIJA.y}) rotate(-90)`}
+                  dominantBaseline="central">{s.nombre}</text>
+              </g>
+            );
+          }
+          if (!s.asignable) {
+            // No es salón: solo su nombre al centro. El administrador puede abrirlo para editarlo.
+            const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
+            return (
+              <g key={s.id} className={`sala no-asig ${esAdmin ? 'editable' : ''} ${s.id === salonSel ? 'sel' : ''}`}
+                onClick={esAdmin ? e => { e.stopPropagation(); if (!movido.current) onSelect(s.id); } : undefined}>
+                <rect className="sala-fondo" x={s.x} y={s.y} width={s.w} height={s.h} />
+                <text className="sala-nombre" x={cx} y={cy} fontSize={fs} dominantBaseline="central">{s.nombre}</text>
+              </g>
+            );
+          }
+          const st = estados[s.id] || { estado: 'na' };
+          const banda = fs * 3.2 + 32;
           const detalle = st.clase ? (st.clase.materia || st.clase.programa) : st.evento?.titulo;
           return (
-            <g key={s.id} className={`sala ${st.estado} ${s.id === salonSel ? 'sel' : ''} ${s.asignable ? '' : 'no-asig'}`}
+            <g key={s.id} className={`sala ${st.estado} ${s.id === salonSel ? 'sel' : ''}`}
               onClick={e => { e.stopPropagation(); if (!movido.current) onSelect(s.id); }}>
               <rect className="sala-fondo" x={s.x} y={s.y} width={s.w} height={s.h} />
               <text className="sala-nombre" x={s.x + s.w / 2} y={s.y + fs + 14} fontSize={fs}>{s.nombre}</text>
-              <text className="sala-codigo" x={s.x + s.w / 2} y={s.y + fs * 1.95 + 18} fontSize={fs * 0.72}>
-                {s.codigo}{ETIQUETA[st.estado] ? ` · ${ETIQUETA[st.estado]}` : ''}
-              </text>
+              {ETIQUETA[st.estado] && <Badge estado={st.estado} cx={s.x + s.w / 2} cy={s.y + fs * 1.75 + 18} fs={fs * 0.6} />}
               {detalle && (
-                <text className="sala-detalle" x={s.x + s.w / 2} y={s.y + fs * 2.75 + 20} fontSize={fs * 0.6}>
+                <text className="sala-detalle" x={s.x + s.w / 2} y={s.y + fs * 3 + 28} fontSize={fs * 0.6}>
                   {detalle.length > 34 ? detalle.slice(0, 33) + '…' : detalle}
                 </text>
               )}
               {s.mesas > 0 && s.h - banda > 80 && (
                 <Mesas x={s.x + 24} y={s.y + banda} w={s.w - 48} h={s.h - banda - 20}
-                  mesas={s.mesas} alumnos={st.alumnos || 0} pizarron={false} />
+                  mesas={s.mesas} alumnos={st.alumnos || 0} pizarron={false} frente={frenteDe(s)} />
               )}
             </g>
           );

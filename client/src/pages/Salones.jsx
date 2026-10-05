@@ -5,6 +5,7 @@ import { PLANTAS, claseEnMomento, eventoEnMomento, fechaISO } from '../lib/tiemp
 import CalendarPanel from '../components/CalendarPanel.jsx';
 import FloorMap from '../components/FloorMap.jsx';
 import InfoPanel from '../components/InfoPanel.jsx';
+import { MesaDefs } from '../components/Mesas.jsx';
 
 export default function Salones() {
   const {
@@ -18,6 +19,15 @@ export default function Salones() {
   const [momento, setMomentoRaw] = useState(() => new Date());
   const [eventoSel, setEventoSel] = useState(null);
   const [ocultos, setOcultos] = useState(() => new Set()); // programas ocultos en el calendario
+  const [simulados, setSimulados] = useState({}); // salon_id -> alumnos simulados (no se guarda)
+  // Calendario o mapa: se muestra uno a la vez para que cada uno tenga todo el ancho.
+  const [principal, setPrincipalRaw] = useState(() => {
+    try { return localStorage.getItem('siaf_posgrado_vista') || 'calendario'; } catch { return 'calendario'; }
+  });
+  const setPrincipal = (v) => {
+    setPrincipalRaw(v);
+    try { localStorage.setItem('siaf_posgrado_vista', v); } catch { /* sin storage */ }
+  };
 
   const cargarGcal = useCallback((inicio, fin) => {
     if (!gcal.habilitado) return;
@@ -33,17 +43,24 @@ export default function Salones() {
       const clase = clases.find((c) => c.salon_id === s.id && claseEnMomento(c, momento)) || null;
       const evento = clase ? null : eventosGcal.find((e) => e.salon_id === s.id && eventoEnMomento(e, momento)) || null;
       const estado = s.fuera_servicio ? 'fuera' : clase || evento ? 'ocupado' : s.asignable ? 'libre' : 'na';
-      m[s.id] = { estado, clase, evento, alumnos: clase?.alumnos ?? 0 };
+      // Sin clase en curso, se usan los alumnos simulados desde el panel (mapa y croquis coinciden).
+      m[s.id] = { estado, clase, evento, alumnos: clase ? (clase.alumnos ?? 0) : (simulados[s.id] ?? 0) };
     }
     return m;
-  }, [salones, clases, eventosGcal, momento]);
+  }, [salones, clases, eventosGcal, momento, simulados]);
 
   const conteos = useMemo(() => Object.fromEntries(PLANTAS.map((p) => {
     const asig = salones.filter((s) => s.planta === p.id && s.asignable);
     return [p.id, { total: asig.length, ocupados: asig.filter((s) => estados[s.id]?.estado === 'ocupado').length }];
   })), [salones, estados]);
 
-  const setMomento = useCallback((d) => { setMomentoRaw(d); setEventoSel(null); }, []);
+  // "Consultando" = se eligió otro día/hora; volver a ahora (✕ u "Hoy") lo apaga.
+  const [consultando, setConsultando] = useState(false);
+  const setMomento = useCallback((d) => {
+    setMomentoRaw(d);
+    setConsultando(Math.abs(d - Date.now()) > 60 * 1000);
+    setEventoSel(null);
+  }, []);
 
   const seleccionar = useCallback((id) => {
     setSalonSel(id);
@@ -86,35 +103,52 @@ export default function Salones() {
 
   return (
     <div className="tablero">
+      <MesaDefs />
       <div className="tablero-barra">
+        <div className="segmento" role="tablist" aria-label="Vista principal">
+          <button type="button" role="tab" aria-selected={principal === 'calendario'}
+            className={principal === 'calendario' ? 'on' : ''} onClick={() => setPrincipal('calendario')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 5h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM3 10h18M8 3v4M16 3v4" />
+            </svg>
+            Calendario
+          </button>
+          <button type="button" role="tab" aria-selected={principal === 'mapa'}
+            className={principal === 'mapa' ? 'on' : ''} onClick={() => setPrincipal('mapa')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />
+            </svg>
+            Mapa
+          </button>
+        </div>
         <div className="fila">
           {sinSalon > 0 && <span className="pill alerta" title="Clases del horario sin salón asignado">{sinSalon} clases sin salón</span>}
-          <span className={`pill ${gcal.habilitado ? 'ok' : 'neutro'}`} title={gcal.calendarId || 'Pendiente de configurar en el servidor'}>
-            Google Calendar {gcal.habilitado ? 'conectado' : 'no conectado'}
-          </span>
+          {gcal.habilitado && <span className="pill ok" title={gcal.calendarId}>Google Calendar conectado</span>}
+          {esAdmin && gcal.habilitado && <button className="plano mini" onClick={sincronizar}>Sincronizar calendario</button>}
+          {esAdmin && <button className="mini" onClick={() => nuevaClase()}>+ Nueva clase</button>}
         </div>
-        {esAdmin && (
-          <div className="fila">
-            {gcal.habilitado && <button className="plano mini" onClick={sincronizar}>Sincronizar calendario</button>}
-            <button className="mini" onClick={() => nuevaClase()}>+ Nueva clase</button>
-          </div>
-        )}
       </div>
 
       <div className="columnas">
-        <CalendarPanel clases={clases} salonesPorId={salonesPorId} eventosGcal={eventosGcal} cargarGcal={cargarGcal}
-          momento={momento} setMomento={setMomento} salonSel={salonSel}
-          onClaseClick={onClaseClick} onEventoClick={onEventoClick}
-          programas={programas} ocultos={ocultos} setOcultos={setOcultos} />
-
-        <FloorMap planta={planta} setPlanta={setPlanta} salones={salones} estados={estados}
-          salonSel={salonSel} onSelect={seleccionar} conteos={conteos} />
+        {/* Ambos quedan montados (conservan semana, vista y zoom); solo se oculta el inactivo. */}
+        <div className={`principal ${principal === 'calendario' ? '' : 'oculto'}`}>
+          <CalendarPanel clases={clases} salonesPorId={salonesPorId} eventosGcal={eventosGcal} cargarGcal={cargarGcal}
+            momento={momento} setMomento={setMomento} consultando={consultando} salonSel={salonSel} visible={principal === 'calendario'}
+            onClaseClick={onClaseClick} onEventoClick={onEventoClick}
+            programas={programas} ocultos={ocultos} setOcultos={setOcultos} />
+        </div>
+        <div className={`principal ${principal === 'mapa' ? '' : 'oculto'}`}>
+          <FloorMap planta={planta} setPlanta={setPlanta} salones={salones} estados={estados}
+            salonSel={salonSel} onSelect={seleccionar} conteos={conteos} esAdmin={esAdmin} />
+        </div>
 
         <aside className="lateral">
           <InfoPanel salon={salon} momento={momento} setMomento={setMomento} estados={estados}
             clases={clases} salones={salones} salonesPorId={salonesPorId} eventosGcal={eventosGcal}
-            eventoSel={eventoSel} esAdmin={esAdmin} onEditarClase={onEditarClase}
-            onActualizarSalon={actualizarSalon} onActualizarClase={actualizarClase} onSelect={seleccionar} />
+            eventoSel={eventoSel} consultando={consultando} esAdmin={esAdmin} onEditarClase={onEditarClase}
+            onActualizarSalon={actualizarSalon} onActualizarClase={actualizarClase} onSelect={seleccionar}
+            onSimular={(id, n) => setSimulados((m) => ({ ...m, [id]: n }))}
+            onVerEnMapa={principal === 'calendario' ? () => setPrincipal('mapa') : null} />
         </aside>
       </div>
     </div>

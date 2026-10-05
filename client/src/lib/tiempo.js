@@ -41,11 +41,34 @@ export const fmtFechaCorta = iso => iso
   ? new Date(`${iso}T12:00:00`).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
   : '—';
 
-// Color estable por programa: los colores de evento de Google Calendar
-// (Arándano, Pavo real, Salvia, Uva, Mandarina, Albahaca, Lavanda, Flamenco, Plátano, Tomate, Verde azulado).
-const PALETA = ['#3f51b5', '#039be5', '#33b679', '#8e24aa', '#f4511e', '#0b8043', '#7986cb', '#e67c73', '#f6bf26', '#d50000', '#009688'];
+// Color por programa. Tonos bien separados entre sí (la paleta de Google tenía tres verdes casi iguales);
+// en orden alterno para que programas contiguos alfabéticamente (p. ej. variantes de Maestría en Fiscal) contrasten.
+const PALETA = [
+  '#1e88e5', // azul
+  '#e53935', // rojo
+  '#43a047', // verde
+  '#fb8c00', // naranja
+  '#8e24aa', // morado
+  '#00acc1', // cian
+  '#795548', // café
+  '#d81b60', // rosa
+  '#3949ab', // índigo
+  '#9e9d24', // oliva
+  '#546e7a', // gris azulado
+  '#f4b400', // amarillo
+];
+const asignados = new Map();
+
+// Reparte la paleta en orden sobre la lista (ordenada) de programas, para que no se repitan
+// mientras haya colores suficientes. Se llama cada vez que cambia la lista de programas.
+export function asignarColores(programas) {
+  asignados.clear();
+  programas.forEach((p, i) => asignados.set(p, PALETA[i % PALETA.length]));
+}
+
 export function colorPrograma(p) {
-  let h = 0;
+  if (asignados.has(p)) return asignados.get(p);
+  let h = 0; // programa aún no registrado (p. ej. recién escrito en el formulario)
   for (const ch of String(p)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return PALETA[h % PALETA.length];
 }

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import Mesas from './Mesas.jsx';
-import { DIAS, PLANTAS, claseEnMomento, fechaISO, fmtFecha, fmtFechaCorta, hm, horaHM, seEnciman, tituloClase } from '../lib/tiempo.js';
+import Mesas, { frenteDe } from './Mesas.jsx';
+import { DIAS, PLANTAS, claseEnMomento, colorPrograma, fechaISO, fmtFecha, fmtFechaCorta, hm, horaHM, seEnciman, tituloClase } from '../lib/tiempo.js';
 
 const TIPOS = { aula: 'Aula', computo: 'Laboratorio de cómputo', sala: 'Sala', cubiculo: 'Cubículo', otro: 'Otro espacio' };
-const ESTADO = { ocupado: 'Ocupado', libre: 'Libre', fuera: 'Fuera de servicio', na: 'No asignable' };
+const ESTADO = { ocupado: 'Ocupado', libre: 'Libre', fuera: 'Fuera de servicio', na: 'No es salón' };
 
 function NumeroEditable({ valor, onGuardar, min = 0, max = 999, deshabilitado, etiqueta }) {
   const [v, setV] = useState(valor ?? '');
@@ -28,13 +28,17 @@ function TarjetaClase({ c, salon, activa, onEditar, esAdmin }) {
   return (
     <div className={`tarjeta ${activa ? 'activa' : ''}`}>
       <div className="tarjeta-top">
-        <strong>{tituloClase(c)}</strong>
-        {esAdmin && <button className="link" onClick={() => onEditar(c)}>Editar</button>}
+        <span className="tarjeta-titulo"><i style={{ background: colorPrograma(c.programa) }} />{tituloClase(c)}</span>
+        {esAdmin && <button className="mini plano" onClick={() => onEditar(c)}>Editar</button>}
       </div>
-      {c.materia && <div className="muted">{c.programa}</div>}
-      <div className="muted">{DIAS[c.dia]} {hm(c.hora_inicio)}–{hm(c.hora_fin)}{salon ? ` · ${salon.nombre}` : ''}</div>
-      {c.profesor && <div>{c.profesor}</div>}
-      <div className="muted small">{fmtFechaCorta(c.fecha_inicio)} → {fmtFechaCorta(c.fecha_fin)} · {c.tipo}{c.alumnos != null ? ` · ${c.alumnos} alumnos` : ''}</div>
+      {c.materia && <div className="tarjeta-sub">{c.programa}</div>}
+      <dl className="tarjeta-datos">
+        <dt>Horario</dt><dd>{DIAS[c.dia]} {hm(c.hora_inicio)}–{hm(c.hora_fin)}</dd>
+        {salon && <><dt>Salón</dt><dd>{salon.nombre}</dd></>}
+        {c.profesor && <><dt>Profesor</dt><dd>{c.profesor}</dd></>}
+        <dt>Periodo</dt><dd>{fmtFechaCorta(c.fecha_inicio)} – {fmtFechaCorta(c.fecha_fin)} · {c.tipo}</dd>
+        {c.alumnos != null && <><dt>Alumnos</dt><dd>{c.alumnos}</dd></>}
+      </dl>
     </div>
   );
 }
@@ -55,11 +59,11 @@ function SelectorMomento({ momento, setMomento }) {
 }
 
 function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId, esAdmin, onEditarClase,
-  onActualizarSalon, onActualizarClase, onSelect }) {
+  onActualizarSalon, onActualizarClase, onSelect, onVerEnMapa, onSimular }) {
   const st = estados[salon.id] || { estado: 'na' };
-  const [simulados, setSimulados] = useState(0);
+  const simulados = st.clase ? 0 : (st.alumnos ?? 0);
   const [asignarId, setAsignarId] = useState('');
-  useEffect(() => { setSimulados(0); setAsignarId(''); }, [salon.id]);
+  useEffect(() => { setAsignarId(''); }, [salon.id]);
 
   const delSalon = useMemo(() => clases.filter(c => c.salon_id === salon.id)
     .sort((a, b) => ((a.dia + 6) % 7) - ((b.dia + 6) % 7) || hm(a.hora_inicio).localeCompare(hm(b.hora_inicio))), [clases, salon.id]);
@@ -74,12 +78,53 @@ function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId,
   const porDia = DIAS.map((d, i) => ({ d, i, cs: delSalon.filter(c => c.dia === i) })).filter(x => x.cs.length);
   const ordenDias = [1, 2, 3, 4, 5, 6, 0];
 
+  const estadoSalon = esAdmin && (
+    <section>
+      <h3>Estado del salón</h3>
+      <NombreEditable valor={salon.nombre} onGuardar={nombre => onActualizarSalon(salon.id, { nombre })} />
+      <label className="check">
+        <input type="checkbox" checked={!salon.asignable}
+          onChange={e => onActualizarSalon(salon.id, e.target.checked
+            ? { asignable: false, fuera_servicio: false } : { asignable: true })} />
+        Este no es salón
+      </label>
+      {salon.asignable && (
+        <label className="check">
+          <input type="checkbox" checked={salon.fuera_servicio}
+            onChange={e => onActualizarSalon(salon.id, { fuera_servicio: e.target.checked })} />
+          Fuera de servicio
+        </label>
+      )}
+      <TextoEditable etiqueta="Motivo / notas" valor={salon.fuera_servicio ? salon.motivo : salon.notas}
+        onGuardar={t => onActualizarSalon(salon.id, salon.fuera_servicio ? { motivo: t } : { notas: t })} />
+    </section>
+  );
+
+  // Espacios que no son salón: sin estado libre/ocupado, mobiliario ni horario; solo nombre y estado.
+  if (!salon.asignable) {
+    return (
+      <div className="panel">
+        <div className="panel-head">
+          <div>
+            <h2>{salon.nombre}</h2>
+            <div className="muted">{planta} · {TIPOS[salon.tipo]}</div>
+          </div>
+          <button className="icono-btn" onClick={() => onSelect(null)} aria-label="Cerrar">✕</button>
+        </div>
+        <div className="estado-chip na">No es salón</div>
+        {estadoSalon}
+        {!esAdmin && salon.notas && <p className="muted">{salon.notas}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="panel">
       <div className="panel-head">
         <div>
           <h2>{salon.nombre}</h2>
-          <div className="muted">{salon.codigo} · {planta} · {TIPOS[salon.tipo]}</div>
+          <div className="muted">{planta} · {TIPOS[salon.tipo]}</div>
+          {onVerEnMapa && <button className="link small" onClick={onVerEnMapa}>Ver en el mapa →</button>}
         </div>
         <button className="icono-btn" onClick={() => onSelect(null)} aria-label="Cerrar">✕</button>
       </div>
@@ -90,8 +135,8 @@ function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId,
       {st.clase && <TarjetaClase c={st.clase} salon={salon} activa esAdmin={esAdmin} onEditar={onEditarClase} />}
       {st.evento && (
         <div className="tarjeta activa gcal">
-          <strong>{st.evento.titulo}</strong>
-          <div className="muted">Evento de Google Calendar · {new Date(st.evento.inicio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}–{new Date(st.evento.fin).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
+          <span className="tarjeta-titulo"><i />{st.evento.titulo}</span>
+          <div className="tarjeta-sub">Evento de Google Calendar ·{new Date(st.evento.inicio).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}–{new Date(st.evento.fin).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
           {st.evento.enlace && <a href={st.evento.enlace} target="_blank" rel="noreferrer">Abrir en Google Calendar</a>}
         </div>
       )}
@@ -100,16 +145,16 @@ function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId,
         <h3>Mobiliario y alumnos</h3>
         <div className="fila-campos">
           <div className="campo">
-            <span>Mesas (2 sillas c/u)</span>
+            <span>Mesas</span>
             <NumeroEditable etiqueta="mesas" valor={salon.mesas} max={60} deshabilitado={!esAdmin}
               onGuardar={n => onActualizarSalon(salon.id, { mesas: n ?? 0 })} />
           </div>
           <div className="campo">
-            <span>{st.clase ? 'Alumnos de la clase' : 'Alumnos (simulación)'}</span>
+            <span>Alumnos</span>
             {st.clase
               ? <NumeroEditable etiqueta="alumnos" valor={st.clase.alumnos} max={200} deshabilitado={!esAdmin}
                   onGuardar={n => onActualizarClase(st.clase.id, { alumnos: n })} />
-              : <NumeroEditable etiqueta="alumnos" valor={simulados} max={200} onGuardar={n => setSimulados(n ?? 0)} />}
+              : <NumeroEditable etiqueta="alumnos" valor={simulados} max={200} onGuardar={n => onSimular?.(salon.id, n ?? 0)} />}
           </div>
         </div>
         <div className={`capacidad ${exceso ? 'exceso' : ''}`}>
@@ -120,7 +165,7 @@ function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId,
           <svg className="croquis" viewBox={`-10 -10 ${salon.w + 20} ${salon.h + 20}`} role="img"
             aria-label={`Acomodo de ${salon.mesas} mesas, ${alumnos} alumnos`}>
             <rect x="-6" y="-6" width={salon.w + 12} height={salon.h + 12} className="croquis-muro" />
-            <Mesas x={30} y={20} w={salon.w - 60} h={salon.h - 40} mesas={salon.mesas} alumnos={alumnos} />
+            <Mesas x={30} y={20} w={salon.w - 60} h={salon.h - 40} mesas={salon.mesas} alumnos={alumnos} frente={frenteDe(salon)} />
           </svg>
         )}
       </section>
@@ -134,13 +179,15 @@ function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId,
         {ordenDias.map(i => porDia.find(x => x.i === i)).filter(Boolean).map(({ d, cs }) => (
           <div key={d} className="dia-grupo">
             <div className="dia-nombre">{d}</div>
-            {cs.map(c => (
-              <button key={c.id} className={`fila-clase ${claseEnMomento(c, momento) ? 'activa' : ''}`}
-                onClick={() => esAdmin ? onEditarClase(c) : null} title={c.profesor || ''}>
-                <span className="hora">{hm(c.hora_inicio)}–{hm(c.hora_fin)}</span>
-                <span className="txt">{tituloClase(c)}<small>{c.materia ? c.programa : c.profesor}</small></span>
-              </button>
-            ))}
+            <div className="lista">
+              {cs.map(c => (
+                <button key={c.id} className={`fila-clase ${claseEnMomento(c, momento) ? 'activa' : ''}`}
+                  onClick={() => esAdmin ? onEditarClase(c) : null} title={c.profesor || ''}>
+                  <span className="hora">{hm(c.hora_inicio)}–{hm(c.hora_fin)}</span>
+                  <span className="txt">{tituloClase(c)}<small>{c.materia ? c.programa : c.profesor}</small></span>
+                </button>
+              ))}
+            </div>
           </div>
         ))}
       </section>
@@ -162,26 +209,27 @@ function PanelSalon({ salon, momento, setMomento, estados, clases, salonesPorId,
         </section>
       )}
 
-      {esAdmin && (
-        <section>
-          <h3>Estado del salón</h3>
-          <label className="check">
-            <input type="checkbox" checked={salon.fuera_servicio}
-              onChange={e => onActualizarSalon(salon.id, { fuera_servicio: e.target.checked })} />
-            Fuera de servicio
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={salon.asignable}
-              onChange={e => onActualizarSalon(salon.id, { asignable: e.target.checked })} />
-            Se puede asignar a clases
-          </label>
-          <TextoEditable etiqueta="Motivo / notas" valor={salon.fuera_servicio ? salon.motivo : salon.notas}
-            onGuardar={t => onActualizarSalon(salon.id, salon.fuera_servicio ? { motivo: t } : { notas: t })} />
-        </section>
-      )}
+      {estadoSalon}
       {!esAdmin && salon.notas && <p className="muted">{salon.notas}</p>}
       <p className="muted small">Consultando: <button className="link" onClick={() => setMomento(new Date())}>volver a ahora</button></p>
     </div>
+  );
+}
+
+function NombreEditable({ valor, onGuardar }) {
+  const [t, setT] = useState(valor || '');
+  useEffect(() => setT(valor || ''), [valor]);
+  const guardar = () => {
+    const limpio = t.trim().toUpperCase();
+    if (limpio && limpio !== valor) onGuardar(limpio);
+    else setT(valor || '');
+  };
+  return (
+    <label className="campo">
+      <span>Nombre</span>
+      <input type="text" value={t} maxLength={40} onChange={e => setT(e.target.value)} onBlur={guardar}
+        onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()} />
+    </label>
   );
 }
 
@@ -197,7 +245,7 @@ function TextoEditable({ valor, onGuardar, etiqueta }) {
   );
 }
 
-function PanelMomento({ momento, setMomento, estados, clases, salones, salonesPorId, eventosGcal, esAdmin, onEditarClase, onSelect, eventoSel }) {
+function PanelMomento({ momento, setMomento, consultando, estados, clases, salones, salonesPorId, eventosGcal, esAdmin, onEditarClase, onSelect, eventoSel }) {
   const asignables = salones.filter(s => s.asignable);
   const ocupados = asignables.filter(s => estados[s.id]?.estado === 'ocupado');
   const libres = asignables.filter(s => estados[s.id]?.estado === 'libre');
@@ -205,21 +253,25 @@ function PanelMomento({ momento, setMomento, estados, clases, salones, salonesPo
   const sinSalonAhora = clases.filter(c => !c.salon_id && claseEnMomento(c, momento));
   const sinSalon = clases.filter(c => !c.salon_id);
   const eventosSinSalon = eventosGcal.filter(e => !e.salon_id && !e.todoElDia && new Date(e.inicio) <= momento && momento < new Date(e.fin));
+  const mostrarCerrar = consultando || !!eventoSel; // se consulta otro momento (o un evento) en lugar de "ahora"
 
   return (
     <div className="panel">
       <div className="panel-head">
         <div>
           <h2>{fmtFecha(momento)}</h2>
-          <div className="muted">{horaHM(momento)} h · selecciona un salón en el mapa o una hora en el calendario</div>
         </div>
+        {mostrarCerrar && (
+          <button className="icono-btn" onClick={() => setMomento(new Date())}
+            aria-label="Quitar consulta y volver a ahora" title="Quitar consulta y volver a ahora">✕</button>
+        )}
       </div>
       <SelectorMomento momento={momento} setMomento={setMomento} />
 
       {eventoSel && (
         <div className="tarjeta activa gcal">
-          <strong>{eventoSel.titulo}</strong>
-          <div className="muted">Evento de Google Calendar{eventoSel.ubicacion ? ` · ${eventoSel.ubicacion}` : ''}</div>
+          <span className="tarjeta-titulo"><i />{eventoSel.titulo}</span>
+          <div className="tarjeta-sub">Evento de Google Calendar{eventoSel.ubicacion ? ` · ${eventoSel.ubicacion}` : ''}</div>
           {eventoSel.descripcion && <div className="small">{eventoSel.descripcion}</div>}
           {eventoSel.enlace && <a href={eventoSel.enlace} target="_blank" rel="noreferrer">Abrir en Google Calendar</a>}
         </div>
@@ -234,18 +286,26 @@ function PanelMomento({ momento, setMomento, estados, clases, salones, salonesPo
       <section>
         <h3>En uso a esta hora</h3>
         {!ocupados.length && <p className="muted">Ningún salón ocupado.</p>}
-        {ocupados.map(s => {
-          const st = estados[s.id];
-          return (
-            <button key={s.id} className="fila-clase activa" onClick={() => onSelect(s.id)}>
-              <span className="hora">{s.nombre}</span>
-              <span className="txt">
-                {st.clase ? tituloClase(st.clase) : st.evento?.titulo}
-                <small>{st.clase ? `${hm(st.clase.hora_inicio)}–${hm(st.clase.hora_fin)} · ${st.clase.profesor || st.clase.programa}` : 'Google Calendar'}</small>
-              </span>
-            </button>
-          );
-        })}
+        {ocupados.length > 0 && (
+          <div className="lista">
+            {ocupados.map(s => {
+              const { clase: c, evento: ev } = estados[s.id];
+              return (
+                <button key={s.id} className="uso" onClick={() => onSelect(s.id)}>
+                  <span className="uso-top">
+                    <span className="uso-salon">{s.nombre}</span>
+                    <span className="uso-hora">{c ? `${hm(c.hora_inicio)}–${hm(c.hora_fin)}` : 'Google Calendar'}</span>
+                  </span>
+                  <span className="uso-titulo">
+                    <i style={{ background: c ? colorPrograma(c.programa) : '#039be5' }} />
+                    {c ? tituloClase(c) : ev?.titulo}
+                  </span>
+                  {c && <span className="uso-meta">{[c.profesor, c.materia ? c.programa : null].filter(Boolean).join(' · ')}</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section>
@@ -261,7 +321,7 @@ function PanelMomento({ momento, setMomento, estados, clases, salones, salonesPo
           <h3>A esta hora sin salón</h3>
           {sinSalonAhora.map(c => <TarjetaClase key={c.id} c={c} esAdmin={esAdmin} onEditar={onEditarClase} />)}
           {eventosSinSalon.map(e => (
-            <div key={e.id} className="tarjeta gcal"><strong>{e.titulo}</strong><div className="muted">{e.ubicacion || 'Sin ubicación'} · Google Calendar</div></div>
+            <div key={e.id} className="tarjeta gcal"><span className="tarjeta-titulo"><i />{e.titulo}</span><div className="tarjeta-sub">{e.ubicacion || 'Sin ubicación'} · Google Calendar</div></div>
           ))}
         </section>
       )}
